@@ -1,0 +1,6 @@
+{
+  "name": "Ashari Zakar Real Estate - DealDesk 3D Headquarters",
+  "description": "Interactive 3D Headquarters and DealDesk operations platform for Ashari Zakar Real Estate (AZRE), featuring real-time Acquisitions, Dispositions, and Operations departments.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
