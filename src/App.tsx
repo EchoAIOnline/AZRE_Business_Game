@@ -1,4 +1,5 @@
 import React,{useState,useRef,useEffect} from 'react';
+import {WorkstationDashboard} from './components/WorkstationDashboard';
 import {LuxuryOffice,rooms,View} from './components/LuxuryOffice';
 export default function App(){
  const [view,setView]=useState<View>('roam');const [ceiling,setCeiling]=useState(true);const [quality,setQuality]=useState(true);const [reference,setReference]=useState(false);
@@ -14,10 +15,8 @@ export default function App(){
   <div className="scene-note"><span className="eyebrow">{view==='overview'?'01 / FLOOR OVERVIEW':'01 / OFFICE INTERIOR'}</span><p>{view==='roam'?'↑ ↓ Walk · ← → Turn · Drag mouse to look':'Drag to orbit · Scroll to zoom · Click a workstation'}</p></div>
   <nav className="room-dock" aria-label="Office rooms">{rooms.map((r,i)=><button key={r.id} className={view===r.id?'selected':''} onClick={()=>setView(r.id as View)}><span className="room-index">0{i+1}</span><span><strong>{r.name}</strong><small>{r.id==='ceo'?'Executive suite':r.id==='conference'?'Shared review space':'One AI workstation'}</small></span><span className="room-arrow">↗</span></button>)}</nav>
   <footer><span>VISUAL DESIGN ONLY</span><p>DealDesk browser access · AI task execution deferred</p><span>AZRE / LEVEL 01</span></footer>
-  <dialog ref={browserDialog} className="dealdesk-dialog" aria-label="DealDesk browser" onCancel={()=>setDealdeskRoom(null)}>
-   <div className="dealdesk-toolbar"><div><strong>DealDesk</strong><small>{rooms.find(r=>r.id===dealdeskRoom)?.name} · dealdesk.asharizakargroup.com</small></div><a href="https://dealdesk.asharizakargroup.com" target="_blank" rel="noopener noreferrer">Open in new tab ↗</a><button autoFocus onClick={()=>setDealdeskRoom(null)} aria-label="Close DealDesk">Close ×</button></div>
-   <iframe src="https://dealdesk.asharizakargroup.com" title="Live DealDesk session" allow="clipboard-write"/>
-   <p>Sign in directly to DealDesk. If embedded login or Google sign-in is blocked, use “Open in new tab”.</p>
+  <dialog ref={browserDialog} className="dealdesk-dialog workstation-dialog" aria-label="DealDesk browser" onCancel={()=>setDealdeskRoom(null)}>
+   <WorkstationDashboard room={dealdeskRoom} onRoom={setDealdeskRoom} onClose={()=>setDealdeskRoom(null)} onFocus={v=>{setView(v);setDealdeskRoom(null);}}/>
   </dialog>
   {reference&&<div className="reference-overlay" role="dialog" aria-modal="true" aria-label="Floor plan reference" onKeyDown={e=>{if(e.key==='Escape')closeReference();if(e.key==='Tab')e.preventDefault();}} onClick={closeReference}><div className="reference-card" onClick={e=>e.stopPropagation()}><button autoFocus onClick={closeReference} aria-label="Close reference">Close ×</button><img src="/brand/floor-reference.png" alt="Supplied floor plan: CEO at rear center, Acquisitions left, Dispositions right, Operations lower right, conference and support rooms lower left, central lobby"/><p>Supplied layout reference. The interactive scene keeps one workstation per AI department.</p></div></div>}
  </div>;

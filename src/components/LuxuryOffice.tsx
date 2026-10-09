@@ -104,7 +104,7 @@ export function LuxuryOffice({view, onSelect, ceiling, quality, paused, onOpenDe
   function emblem(x:number,y:number,z:number,size:number,rot=0){const t=loader.load('/brand/emblem.png',()=>{if(disposed)t.dispose();});t.colorSpace=THREE.SRGBColorSpace;textures.add(t);const m=new THREE.MeshBasicMaterial({map:t,transparent:true,depthWrite:false,side:THREE.DoubleSide});materials.add(m);const p=mesh(new THREE.PlaneGeometry(size,size),m,x,y,z);p.rotation.y=rot;}
   function wordmark(x:number,y:number,z:number,size:number){const t=loader.load('/brand/reception-wordmark-transparent.png',()=>{if(disposed)t.dispose();});t.colorSpace=THREE.SRGBColorSpace;textures.add(t);const m=new THREE.MeshBasicMaterial({map:t,transparent:true,depthWrite:false});materials.add(m);mesh(new THREE.PlaneGeometry(size,size),m,x,y,z);}
   function chair(x:number,z:number,rot=0,fitted=false){const g=new THREE.Group();g.position.set(x,0,z);g.rotation.y=rot;scene.add(g);const seatY=fitted?.54:.6;box(fitted?.64:.7,fitted?.12:.16,fitted?.64:.72,0,seatY,0,chairMat,g);box(fitted?.64:.7,fitted?.76:.85,.12,0,seatY+.45,fitted?.3:.34,chairMat,g);cylinder(.06,seatY-.1,0,(seatY-.1)/2+.04,0,black,g);for(const a of [0,1.26,2.51,3.77,5.03]){const b=box(.045,.05,.45,Math.sin(a)*.18,.08,Math.cos(a)*.18,black,g);b.rotation.y=a;}for(const x of [-.4,.4])box(.07,.06,.5,x,seatY+.28,0,black,g);}
-  const interactives:THREE.Object3D[]=[];
+  const interactives:THREE.Object3D[]=[];const monitorVideos:HTMLVideoElement[]=[];
 
   const avatarMixers:THREE.AnimationMixer[]=[];
   const workGestures:((time:number)=>void)[]=[];
@@ -213,8 +213,20 @@ export function LuxuryOffice({view, onSelect, ceiling, quality, paused, onOpenDe
    },undefined,error=>console.error('Unable to load Acquisitions character',error));
   }
   function desk(x:number,z:number,id:View,ceo=false){const w=ceo?3.5:2.5;box(w,.14,1.3,x,.91,z,ceo?marbleMat:white);for(const dx of [-w/2+.25,w/2-.25])box(.5,.8,1.15,x+dx,.42,z,ceo?black:cream);box(w,.035,.06,x,.83,z+.66,brass);chair(x,z-1.05,Math.PI,!ceo);const monitor=box(.92,.59,.055,x,1.38,z+.2,black);cylinder(.04,.2,x,1.02,z+.2,black);box(.3,.025,.23,x,.96,z+.2,black);const screenMat=new THREE.MeshBasicMaterial({color:'#111b19'});materials.add(screenMat);
-   const screenshot=!ceo?{url:'/brand/dealdesk-login.png',ratio:720/1280}:null;
-   if(screenshot){
+   const screenshot=id==='acquisitions'?{url:'/brand/acquisitions-recording-preview.png',ratio:1740/3024}:!ceo?{url:'/brand/dealdesk-login.png',ratio:1740/3024}:null;
+   if(!ceo){
+    const video=document.createElement('video');video.src=`/media/${id}-dealdesk.mp4`;video.muted=true;video.loop=true;video.playsInline=true;video.preload='auto';monitorVideos.push(video);
+    const videoTexture=new THREE.VideoTexture(video);videoTexture.colorSpace=THREE.SRGBColorSpace;textures.add(videoTexture);screenMat.map=videoTexture;screenMat.color.set('#ffffff');
+    video.play().catch(()=>{renderer.domElement.addEventListener('pointerdown',()=>{if(!disposed)void video.play().catch(()=>{});},{once:true});});
+    let playbackResting=false;
+    workGestures.push(time=>{
+     const {resting,restBlend}=scheduleFor(id)(time);
+     const shouldPause=resting||restBlend>0;
+     if(shouldPause){if(!video.paused)video.pause();}
+     else if(playbackResting){void video.play().catch(()=>{});}
+     playbackResting=shouldPause;
+    });
+   }else if(screenshot){
     const screenTexture=loader.load(screenshot.url,()=>{if(disposed)screenTexture.dispose();});screenTexture.colorSpace=THREE.SRGBColorSpace;textures.add(screenTexture);
     screenMat.map=screenTexture;screenMat.color.set('#ffffff');
    }
@@ -230,7 +242,7 @@ export function LuxuryOffice({view, onSelect, ceiling, quality, paused, onOpenDe
     box(.2,.005,.23,x-.48,.985,z-.38,mat('#34383b',.9));
     workGestures.push(time=>{const {mouse:active,motionTime}=scheduleFor(id)(time);mouse.position.z=z-.38+(active?Math.sin(motionTime*2)*.025:0);});
    }cylinder(.05,.1,x+.9,1.05,z+.4,brass);
-   const hit=box(w,2,2,x,1,z,new THREE.MeshBasicMaterial({visible:false}));materials.add(hit.material as THREE.Material);hit.userData.room=id;interactives.push(hit);monitor.userData.room=id;if(!ceo){monitor.userData.dealdesk=true;interactives.push(monitor);display.userData.room=id;display.userData.dealdesk=true;interactives.push(display);}
+   const hit=box(w,2,2,x,1,z,new THREE.MeshBasicMaterial({visible:false}));materials.add(hit.material as THREE.Material);hit.userData.room=id;interactives.push(hit);monitor.userData.room=id;{monitor.userData.dealdesk=true;interactives.push(monitor);display.userData.room=id;display.userData.dealdesk=true;interactives.push(display);}
    if(!ceo){ // One visible avatar per AI department, idle only.
     humanSpecialist(x,z,id==='acquisitions'?'/models/acquisitions-specialist.glb':id==='dispositions'?'/models/dispositions-specialist.glb':'/models/operations-specialist.glb',true,id);
    }
@@ -355,7 +367,7 @@ export function LuxuryOffice({view, onSelect, ceiling, quality, paused, onOpenDe
     }
     forward.set(-Math.sin(yaw)*Math.cos(pitch),Math.sin(pitch),-Math.cos(yaw)*Math.cos(pitch));roamTarget.copy(camera.position).add(forward);camera.lookAt(roamTarget);
    }else controls.update();renderer.render(scene,camera);frame=requestAnimationFrame(animate);}
-  animate();return()=>{disposed=true;clearKeys();window.removeEventListener('keydown',handleKeyDown);window.removeEventListener('keyup',handleKeyUp);window.removeEventListener('blur',clearKeys);document.removeEventListener('visibilitychange',visibilityChange);cancelAnimationFrame(frame);resize.disconnect();controls.dispose();renderer.domElement.removeEventListener('pointerdown',pointerDown);renderer.domElement.removeEventListener('pointermove',pointerMove);renderer.domElement.removeEventListener('pointerup',pointerUp);renderer.domElement.removeEventListener('pointercancel',clearKeys);geometry.forEach(g=>g.dispose());materials.forEach(m=>m.dispose());textures.forEach(t=>t.dispose());renderer.dispose();renderer.domElement.remove();};
+  animate();return()=>{disposed=true;clearKeys();window.removeEventListener('keydown',handleKeyDown);window.removeEventListener('keyup',handleKeyUp);window.removeEventListener('blur',clearKeys);document.removeEventListener('visibilitychange',visibilityChange);cancelAnimationFrame(frame);resize.disconnect();controls.dispose();renderer.domElement.removeEventListener('pointerdown',pointerDown);renderer.domElement.removeEventListener('pointermove',pointerMove);renderer.domElement.removeEventListener('pointerup',pointerUp);renderer.domElement.removeEventListener('pointercancel',clearKeys);geometry.forEach(g=>g.dispose());materials.forEach(m=>m.dispose());textures.forEach(t=>t.dispose());monitorVideos.forEach(v=>{v.pause();v.removeAttribute('src');v.load();});renderer.dispose();renderer.domElement.remove();};
  },[]);
  return <div ref={host} className="scene">{failed&&<div className="graphics-error">3D graphics are unavailable. Use the room directory to review the layout.</div>}</div>;
 }
