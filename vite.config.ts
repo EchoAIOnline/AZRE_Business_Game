@@ -6,7 +6,7 @@ import dealdeskHandler from './api/dealdesk.ts';
 
 export default defineConfig(({mode}) => {
   const env = loadEnv(mode, process.cwd(), '');
-  for (const key of ['OFFICE_ACCESS_PASSWORD','DEALDESK_PLUGIN_API_KEY','DEALDESK_PLUGIN_URL']) if (env[key]) process.env[key] = env[key];
+  for (const key of ['OFFICE_ACCESS_PASSWORD','DEALDESK_PLUGIN_API_KEY','DEALDESK_PLUGIN_API_KEY2','DEALDESK_PLUGIN_URL']) if (env[key]) process.env[key] = env[key];
   return {
     plugins: [react(), tailwindcss(), {name:'local-dealdesk-api', configureServer(server) {
       server.middlewares.use('/api/dealdesk', async (req,res) => {

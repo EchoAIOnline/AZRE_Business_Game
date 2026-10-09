@@ -11,7 +11,7 @@ export default async function handler(req: IncomingMessage & { body?: unknown },
   const cookieOptions = `Path=/api/dealdesk; HttpOnly; SameSite=Strict${secure ? '; Secure' : ''}`;
   if (body?.action === 'logout') {res.setHeader('Set-Cookie',`azre_session=; ${cookieOptions}; Max-Age=0`);return reply(200,{success:true});}
   const password = process.env.OFFICE_ACCESS_PASSWORD;
-  const key = process.env.DEALDESK_PLUGIN_API_KEY;
+  const key = process.env.DEALDESK_PLUGIN_API_KEY2 || process.env.DEALDESK_PLUGIN_API_KEY;
   if (!password || password.length < 8 || !key) return reply(503, { error: 'The server connection is not configured for this site. Set the office password (8+ characters) and DealDesk API variables on this server.' });
   const equal = (a:string,b:string) => {const x=Buffer.from(a),y=Buffer.from(b);return x.length===y.length&&timingSafeEqual(x,y);};
   const sign = (value:string) => createHmac('sha256',password).update(`azre-office-session:${value}`).digest('hex');
