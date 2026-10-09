@@ -1,0 +1,16 @@
+import assert from 'node:assert/strict';
+import {moveWalker,overlapsObstacle,WalkObstacle} from '../src/utils/walkCollision';
+const wall:WalkObstacle={x:0,z:0,halfWidth:.02,halfDepth:3,yaw:0};
+assert.ok(moveWalker(-1,0,2,0,[wall]).x<-.24,'thin wall blocks a long movement');
+const slid=moveWalker(-.3,-1,1,1,[wall]);assert.ok(slid.x<-.24&&slid.z>-.1,'diagonal movement slides along wall');
+const doorway=[{...wall,z:-2,halfDepth:1.3},{...wall,z:2,halfDepth:1.3}];
+assert.ok(moveWalker(-1,0,2,0,doorway).x>.9,'1.4-wide doorway remains walkable');
+assert.ok(moveWalker(-1,1,2,0,doorway).x<0,'wall beside doorway blocks passage');
+const rotated={x:0,z:0,halfWidth:1.75,halfDepth:.6,yaw:Math.PI/2};
+assert.ok(overlapsObstacle(.5,1,rotated),'rotated furniture footprint blocks correctly');
+assert.ok(!overlapsObstacle(1,0,rotated),'clear side of rotated furniture stays open');
+const desk={x:0,z:-1,halfWidth:2.95,halfDepth:.7,yaw:0};
+assert.ok(moveWalker(0,2,0,-5,[desk]).z>-.07,'reception counter stops a frontal approach');
+assert.equal(moveWalker(0,12.9,0,0,[desk]).z,12.9,'spawn stays safe');
+assert.ok(moveWalker(17,0,5,0,[]).x<=17.65,'outer boundary remains enforced');
+console.log('Collision checks passed');

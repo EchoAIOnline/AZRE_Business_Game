@@ -20,13 +20,13 @@ Use Node.js 22.12+ and npm. Run `npm install`, then `npm run dev -- --host 127.0
 
 ## Limitations
 
-This is a first native-geometry implementation, not a photorealistic recreation. Plants, people, skyline and furniture are stylized; TV content is a branded standby display. True polished-floor reflections, detailed purchased/modelled furniture, baked lighting, full walk/collision navigation and high-end avatar rigs are not implemented. Logos retain their supplied image treatment. No licensed external asset purchases were made.
+This is a first native-geometry implementation, not a photorealistic recreation. Plants, people, skyline and furniture are stylized; TV content is a branded standby display. True polished-floor reflections, detailed purchased/modelled furniture, baked lighting, high-end character rendering is not implemented. Logos retain their supplied image treatment. No licensed external asset purchases were made.
 
 Source imported from EchoAIOnline/AZRE_Business_Game commit 1346948eaf916524100ebbee29bed7a4ea8a31f9. Changes are local and have not been deployed or pushed to GitHub.
 
 ## Free roam
 
-Arrow keys work immediately on entry. Select **Free roam · Arrow keys** to return from other views. Up and Down walk forward/backward; Left and Right turn. Free roam is the default entry view; Escape opens the floor overview. Switching modes resets held keys, and blur, background tabs, and the reference dialog pause movement. Movement uses elapsed time and a fixed 1.7-unit eye height. The camera is constrained to the outer floor boundary; interior wall/furniture collision is not implemented. Mouse orbit and workstation clicks are disabled while roaming; room buttons remain available.
+Arrow keys work immediately on entry. Select **Free roam · Arrow keys** to return from other views. Up and Down walk forward/backward; Left and Right turn. Free roam is the default entry view; Escape opens the floor overview. Switching modes resets held keys, and blur, background tabs, and the reference dialog pause movement. Movement uses elapsed time and a fixed 1.7-unit eye height. Free-roam movement respects the outer boundary and solid interior glass walls, open door leaves, desks, seating, cabinets, tables, and plant pots. A circular walking footprint and short movement steps prevent crossing thin walls; blocked diagonal movement slides along clear axes. Open doorway gaps remain walkable. Collision applies to free roam; orbit/preset cameras remain inspection tools. Mouse orbit and workstation clicks are disabled while roaming; room buttons remain available.
 
 Reception-side plants removed. Suite doors have full-height black frames, glass leaves at 90° open, brass pulls and visible hinges.
 
