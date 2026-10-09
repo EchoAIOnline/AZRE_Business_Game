@@ -16,10 +16,10 @@ export const rooms = [
 ] as const;
 
 // Architectural scene uses native geometry and reusable materials. No business data is simulated.
-export function LuxuryOffice({view, onSelect, ceiling, quality, paused}: {view:View; onSelect:(v:View)=>void; ceiling:boolean; quality:boolean; paused:boolean}) {
- const host=useRef<HTMLDivElement>(null); const state=useRef({view,ceiling,quality,onSelect,paused});
+export function LuxuryOffice({view, onSelect, ceiling, quality, paused, onOpenDealDesk}: {view:View; onOpenDealDesk:(v:View)=>void; onSelect:(v:View)=>void; ceiling:boolean; quality:boolean; paused:boolean}) {
+ const host=useRef<HTMLDivElement>(null); const state=useRef({view,ceiling,quality,onSelect,paused,onOpenDealDesk});
  const [failed,setFailed]=useState(false);
- useEffect(()=>{state.current={view,ceiling,quality,onSelect,paused};},[view,ceiling,quality,onSelect,paused]);
+ useEffect(()=>{state.current={view,ceiling,quality,onSelect,paused,onOpenDealDesk};},[view,ceiling,quality,onSelect,paused,onOpenDealDesk]);
  useEffect(()=>{
   if(!host.current)return; const el=host.current;
   let renderer:THREE.WebGLRenderer;
@@ -213,7 +213,7 @@ export function LuxuryOffice({view, onSelect, ceiling, quality, paused}: {view:V
    },undefined,error=>console.error('Unable to load Acquisitions character',error));
   }
   function desk(x:number,z:number,id:View,ceo=false){const w=ceo?3.5:2.5;box(w,.14,1.3,x,.91,z,ceo?marbleMat:white);for(const dx of [-w/2+.25,w/2-.25])box(.5,.8,1.15,x+dx,.42,z,ceo?black:cream);box(w,.035,.06,x,.83,z+.66,brass);chair(x,z-1.05,Math.PI,!ceo);const monitor=box(.92,.59,.055,x,1.38,z+.2,black);cylinder(.04,.2,x,1.02,z+.2,black);box(.3,.025,.23,x,.96,z+.2,black);const screenMat=new THREE.MeshBasicMaterial({color:'#111b19'});materials.add(screenMat);
-   const screenshot=id==='dispositions'?{url:'/brand/dispositions-buyers.png',ratio:1738/3010}:id==='acquisitions'?{url:'/brand/acquisitions-pipeline.png',ratio:1732/3016}:null;
+   const screenshot=!ceo?{url:'/brand/dealdesk-login.png',ratio:720/1280}:null;
    if(screenshot){
     const screenTexture=loader.load(screenshot.url,()=>{if(disposed)screenTexture.dispose();});screenTexture.colorSpace=THREE.SRGBColorSpace;textures.add(screenTexture);
     screenMat.map=screenTexture;screenMat.color.set('#ffffff');
@@ -230,7 +230,7 @@ export function LuxuryOffice({view, onSelect, ceiling, quality, paused}: {view:V
     box(.2,.005,.23,x-.48,.985,z-.38,mat('#34383b',.9));
     workGestures.push(time=>{const {mouse:active,motionTime}=scheduleFor(id)(time);mouse.position.z=z-.38+(active?Math.sin(motionTime*2)*.025:0);});
    }cylinder(.05,.1,x+.9,1.05,z+.4,brass);
-   const hit=box(w,2,2,x,1,z,new THREE.MeshBasicMaterial({visible:false}));materials.add(hit.material as THREE.Material);hit.userData.room=id;interactives.push(hit);monitor.userData.room=id;
+   const hit=box(w,2,2,x,1,z,new THREE.MeshBasicMaterial({visible:false}));materials.add(hit.material as THREE.Material);hit.userData.room=id;interactives.push(hit);monitor.userData.room=id;if(!ceo){monitor.userData.dealdesk=true;interactives.push(monitor);display.userData.room=id;display.userData.dealdesk=true;interactives.push(display);}
    if(!ceo){ // One visible avatar per AI department, idle only.
     humanSpecialist(x,z,id==='acquisitions'?'/models/acquisitions-specialist.glb':id==='dispositions'?'/models/dispositions-specialist.glb':'/models/operations-specialist.glb',true,id);
    }
@@ -337,7 +337,7 @@ export function LuxuryOffice({view, onSelect, ceiling, quality, paused}: {view:V
   const ray=new THREE.Raycaster(),pointer=new THREE.Vector2();let down={x:0,y:0},drag=false;
   function pointerDown(e:PointerEvent){down={x:e.clientX,y:e.clientY};drag=false;if(state.current.view==='roam'&&!state.current.paused&&e.button===0){looking=true;renderer.domElement.setPointerCapture(e.pointerId);renderer.domElement.style.cursor='grabbing';}}
   function pointerMove(e:PointerEvent){if(Math.hypot(e.clientX-down.x,e.clientY-down.y)>5)drag=true;if(looking&&state.current.view==='roam'&&!state.current.paused){yaw-=(e.clientX-down.x)*.004;pitch=THREE.MathUtils.clamp(pitch-(e.clientY-down.y)*.004,-1.1,1.1);down={x:e.clientX,y:e.clientY};}}
-  function pointerUp(e:PointerEvent){looking=false;renderer.domElement.style.cursor=state.current.view==='roam'?'grab':'default';if(renderer.domElement.hasPointerCapture(e.pointerId))renderer.domElement.releasePointerCapture(e.pointerId);if(state.current.view==='roam'||drag||e.target!==renderer.domElement)return;const rect=el.getBoundingClientRect();pointer.set((e.clientX-rect.left)/rect.width*2-1,-(e.clientY-rect.top)/rect.height*2+1);ray.setFromCamera(pointer,camera);const hit=ray.intersectObjects(interactives)[0];if(hit)state.current.onSelect(hit.object.userData.room);}
+  function pointerUp(e:PointerEvent){looking=false;renderer.domElement.style.cursor=state.current.view==='roam'?'grab':'default';if(renderer.domElement.hasPointerCapture(e.pointerId))renderer.domElement.releasePointerCapture(e.pointerId);if(state.current.paused||drag||e.target!==renderer.domElement)return;const rect=el.getBoundingClientRect();pointer.set((e.clientX-rect.left)/rect.width*2-1,-(e.clientY-rect.top)/rect.height*2+1);ray.setFromCamera(pointer,camera);const hits=ray.intersectObjects(interactives);const screen=hits.find(h=>h.object.userData.dealdesk);if(screen)state.current.onOpenDealDesk(screen.object.userData.room);else if(state.current.view!=='roam'&&hits[0])state.current.onSelect(hits[0].object.userData.room);}
   renderer.domElement.addEventListener('pointerdown',pointerDown);renderer.domElement.addEventListener('pointermove',pointerMove);renderer.domElement.addEventListener('pointerup',pointerUp);renderer.domElement.addEventListener('pointercancel',clearKeys);
   controls.addEventListener('start',()=>{transition=false;});
   const resize=new ResizeObserver(()=>{const w=el.clientWidth,h=el.clientHeight;if(!w||!h)return;renderer.setSize(w,h);camera.aspect=w/h;camera.updateProjectionMatrix();});resize.observe(el);
