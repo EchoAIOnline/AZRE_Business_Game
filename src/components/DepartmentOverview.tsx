@@ -1,0 +1,26 @@
+import type {CrmSnapshot,CrmTable,CrmRecord} from './DealDeskRecords';
+import {recordLabel} from './DealDeskRecords';
+const money=(v:number)=>v.toLocaleString('en-US',{style:'currency',currency:'USD',maximumFractionDigits:0});
+const stage=(r:CrmRecord)=>String(r.offerDecision||r.status||'');
+const active=(r:CrmRecord)=>!/(declined|canceled|closed|sold|no longer|unavailable|priced too high)/i.test(stage(r));
+export function DepartmentOverview({room,snapshot,errors}:{room:string;snapshot:CrmSnapshot;errors:Partial<Record<CrmTable,string>>}){
+ const deals=snapshot.Deals, buyers=snapshot.Buyers, tasks=snapshot.PluginTasks;
+ const pipeline=deals.filter(active),contracts=deals.filter(r=>stage(r)==='Deal Under Contract'),offers=deals.filter(r=>/Made (Written|Verbal) Offer/.test(stage(r)));
+ const qualified=buyers.filter(r=>['Vetted Buyer','Repeat Buyer','VIP Buyer'].includes(String(r.status)));
+ const priced=pipeline.filter(r=>typeof r.offerPrice==='number'&&r.offerPrice>0);
+ const sum=priced.reduce((n,r)=>n+(r.offerPrice as number),0);
+ const overdue=tasks.filter(r=>r.dueDate&&Date.parse(String(r.dueDate))<Date.now()&&!/completed|closed|cancel/i.test(String(r.status)));
+ const openTasks=tasks.filter(r=>!/completed|closed|cancel/i.test(String(r.status)));
+ type Metric=[string,string,string,CrmTable?];
+ const metrics:Record<string,Metric[]>={
+ acquisitions:[['Active Pipeline',`${pipeline.length} Opportunities`,'Excludes closed and declined stages','Deals'],['Offers Out',`${offers.length} Offers`,'Written / verbal offer stages','Deals'],['Target Land / ARV','20%–25%','AZRE new construction formula'],['Avg Recorded Offer',priced.length?money(sum/priced.length):'Not recorded','Positive offers in active pipeline','Deals']],
+ dispositions:[['Verified Buyer Network',`${qualified.length} Buyers`,'Vetted, repeat and VIP profiles','Buyers'],['Buyer Prospects',String(buyers.filter(r=>r.status==='New Lead').length),'New Lead profiles in DealDesk','Buyers'],['Under Contract',`${contracts.length} Deals`,'Ready for disposition review','Deals'],['Buyer Match Rate','Not available','Matching results are not recorded']],
+ operations:[['Closing Attorney','Weissman PC','AZRE preferred counsel'],['Under Contract',`${contracts.length} Properties`,'Recorded contract stage','Deals'],['Open CRM Tasks',String(openTasks.length),'Excludes completed tasks','PluginTasks'],['Overdue CRM Tasks',String(overdue.length),'Based on recorded due dates','PluginTasks']],
+ ceo:[['Active Opportunities',String(pipeline.length),'Current acquisition pipeline','Deals'],['Recorded Offer Total',money(sum),'Active positive offers; not capital committed','Deals'],['Accepted Offers',String(deals.filter(r=>stage(r)==='Seller Accepted Offer').length),'Seller acceptance stage','Deals'],['Closed Deals',String(deals.filter(r=>stage(r)==='Deal Successfully Closed').length),'All recorded successful closings','Deals']],
+ conference:[['Under Review',`${pipeline.length} Deals`,'Active opportunity stages','Deals'],['Contractor Estimates','Not verified','Source verification required'],['Title Status','Not connected','Attorney confirmation required'],['Review Tasks',String(openTasks.length),'Open tasks recorded in DealDesk','PluginTasks']]
+ };
+ const records=room==='dispositions'?qualified:room==='operations'?openTasks:room==='ceo'?deals.filter(r=>/Accepted|Under Contract/.test(stage(r))):pipeline;
+ const heading=room==='dispositions'?'VERIFIED BUYER NETWORK':room==='operations'?'TRANSACTION TASKS':room==='ceo'?'EXECUTIVE DEAL WATCHLIST':room==='conference'?'DEAL REVIEW QUEUE':'ACQUISITION PIPELINE';
+ const table:CrmTable=room==='dispositions'?'Buyers':room==='operations'?'PluginTasks':'Deals';
+ return <><div className="wd-metrics">{(metrics[room]||metrics.acquisitions).map(([label,value,note,source])=><section key={label}><p>{label}</p><strong>{source&&errors[source]?'Unavailable':value}</strong><small>{source&&errors[source]?'CRM read failed':note}</small></section>)}</div><div className="wd-columns"><section><h3><span className="wd-green">◷</span> {heading}<small>DealDesk snapshot</small></h3>{errors[table]?<p role="alert">{errors[table]}</p>:records.length?records.slice(0,4).map((r,i)=><div className="wd-work" key={String(r.id||i)}><span>○</span><div><b>{recordLabel(r)}</b><p>{String(r.companyName||r.offerDecision||r.status||'Status not recorded')}{r.dueDate?` · Due ${r.dueDate}`:''}</p></div></div>):<p>No records in this queue.</p>}<small>{records.length>4?`${records.length} total · View all in ${room==='dispositions'?'The Network':room==='operations'?'Weissman PC Escrow':'Deal Pipeline'}`:'Read-only records · AI work execution is not active'}</small></section><section><h3><span className="wd-gold">♧</span> THE SURECASH OFFER™ STANDARD TERMS</h3>{[['Purchase Condition','As-Is (No repairs required from seller)'],['Earnest Money Deposit','1% of agreed purchase price'],['Due Diligence Window','7 Calendar Days'],['Closing Timeline','Approximately 30 Days'],['Closing Attorney','Weissman PC (Preferred Closing Counsel)']].map(([k,v])=><div className="wd-row" key={k}><span>{k}</span><b className={k==='Closing Attorney'?'wd-gold':k==='Earnest Money Deposit'?'wd-green':''}>{v}</b></div>)}<small>Proposed standard terms; executed agreements control.</small></section></div></>;
+}
