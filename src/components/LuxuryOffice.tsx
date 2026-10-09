@@ -95,7 +95,7 @@ export function LuxuryOffice({view, onSelect, ceiling, quality, paused}: {view:V
    cylinder(.025,.7,-side*1.1,1.4,.09,brass,door);
   }
   function plant(x:number,z:number,size=1){const g=new THREE.Group();g.position.set(x,0,z);scene.add(g);cylinder(.32*size,.65*size,0,.33*size,0,black,g);cylinder(.33*size,.055*size,0,.66*size,0,brass,g);for(let i=0;i<12;i++){const a=i*2.4,h=(.8+rnd()*.75)*size;const stem=cylinder(.015*size,h,Math.cos(a)*.08,h/2+.6*size,Math.sin(a)*.08,wood,g);stem.rotation.z=Math.cos(a)*.3;const l=mesh(new THREE.SphereGeometry(1,8,6),leaf,Math.cos(a)*.3*size,h+.4*size,Math.sin(a)*.3*size,g);l.scale.set(.16*size,.6*size,.06*size);l.rotation.z=Math.cos(a)*.7;l.rotation.y=a;}}
-  function sign(text:string,x:number,y:number,z:number,width=3.1,rot=0){const t=texture(c=>{c.fillStyle='#161815';c.fillRect(0,0,1024,512);c.strokeStyle='#ba9654';c.lineWidth=9;c.strokeRect(6,6,1012,500);c.textAlign='center';c.fillStyle='#e4dbcb';c.font='500 58px Georgia';text.split('|').forEach((s,i,a)=>c.fillText(s,512,245+(i-(a.length-1)/2)*80));});const m=new THREE.MeshBasicMaterial({map:t});materials.add(m);const p=mesh(new THREE.PlaneGeometry(width,width/2),m,x,y,z);p.rotation.y=rot;}
+  function sign(text:string,x:number,y:number,z:number,width=3.1,rot=0,height=width/2){const canvasHeight=Math.round(1024*height/width);const t=texture(c=>{c.fillStyle='#161815';c.fillRect(0,0,1024,canvasHeight);c.strokeStyle='#ba9654';c.lineWidth=9;c.strokeRect(6,6,1012,canvasHeight-12);c.textAlign='center';c.textBaseline='middle';c.fillStyle='#e4dbcb';c.font='500 58px Georgia';text.split('|').forEach((s,i,a)=>c.fillText(s,512,canvasHeight/2+(i-(a.length-1)/2)*80));},1024,canvasHeight);const m=new THREE.MeshBasicMaterial({map:t});materials.add(m);const p=mesh(new THREE.PlaneGeometry(width,height),m,x,y,z);p.rotation.y=rot;}
   const loader=new THREE.TextureLoader();let disposed=false;
   function emblem(x:number,y:number,z:number,size:number,rot=0){const t=loader.load('/brand/emblem.png',()=>{if(disposed)t.dispose();});t.colorSpace=THREE.SRGBColorSpace;textures.add(t);const m=new THREE.MeshBasicMaterial({map:t,transparent:true,depthWrite:false,side:THREE.DoubleSide});materials.add(m);const p=mesh(new THREE.PlaneGeometry(size,size),m,x,y,z);p.rotation.y=rot;}
   function wordmark(x:number,y:number,z:number,size:number){const t=loader.load('/brand/reception-wordmark-transparent.png',()=>{if(disposed)t.dispose();});t.colorSpace=THREE.SRGBColorSpace;textures.add(t);const m=new THREE.MeshBasicMaterial({map:t,transparent:true,depthWrite:false});materials.add(m);mesh(new THREE.PlaneGeometry(size,size),m,x,y,z);}
@@ -138,10 +138,13 @@ export function LuxuryOffice({view, onSelect, ceiling, quality, paused}: {view:V
   sofa(-10,-22,0);sofa(10,-22,0);
   for(const x of [-10,10]){box(2,.45,1.1,x,.25,-19.8,marbleMat);plant(x,-25);}
   // Reception feature wall and counter.
-  box(3.8,3.7,.24,-2.8,1.85,-4,marbleMat);for(const x of [-5,-.7])for(let dx=0;dx<.8;dx+=.13)box(.07,3.8,.22,x+dx,1.9,-4,wood);
+  box(3.8,3.7,.24,-2.8,1.85,-4,marbleMat);for(const x of [-5,-1.38])for(let dx=0;dx<.8;dx+=.13)box(.07,3.8,.22,x+dx,1.9,-4,wood);
   emblem(-2.8,3.0,-3.85,1.15);wordmark(-2.8,1.78,-3.85,2.6);
   box(5.8,1.15,1.35,0,.59,-1,marbleMat);box(5.9,.08,1.4,0,1.2,-1,marbleMat);box(5.8,.055,.07,0,.08,-.3,glow);
-  emblem(-1.8,.63,-.31,.82);sign('RECEPTION',.8,.64,-.30,2.4);box(.8,.5,.05,0,1.53,-1.1,cream);
+  emblem(0,.63,-.31,.82);
+  // Small freestanding reception plaque on the countertop, facing the lobby.
+  box(1.1,.04,.3,1.8,1.26,-.8,brass);box(1.05,.13,.055,1.8,1.345,-.8,black);sign('RECEPTION',1.8,1.345,-.767,1.05,0,.13);
+  chair(0,-2.5,Math.PI);
   // Symmetrical lobby seating and coffee tables.
   box(14.5,.025,9,0,.025,7,rug);
   function sofa(x:number,z:number,rot:number){const g=new THREE.Group();g.position.set(x,0,z);g.rotation.y=rot;scene.add(g);box(3.5,.5,1.15,0,.38,0,white,g);box(3.5,.7,.2,0,.92,-.48,white,g);for(const dx of [-1.7,1.7])box(.25,.66,1.2,dx,.68,0,white,g);for(const dx of [-1.4,1.4])box(.5,.5,.18,dx,.86,-.27,mat('#8c7953'),g);box(3.4,.04,.1,0,.12,.5,brass,g);}
