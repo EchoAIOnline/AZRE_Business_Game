@@ -1,3 +1,4 @@
+import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader.js';
 import React, { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js';
@@ -101,6 +102,16 @@ export function LuxuryOffice({view, onSelect, ceiling, quality, paused}: {view:V
   function wordmark(x:number,y:number,z:number,size:number){const t=loader.load('/brand/reception-wordmark-transparent.png',()=>{if(disposed)t.dispose();});t.colorSpace=THREE.SRGBColorSpace;textures.add(t);const m=new THREE.MeshBasicMaterial({map:t,transparent:true,depthWrite:false});materials.add(m);mesh(new THREE.PlaneGeometry(size,size),m,x,y,z);}
   function chair(x:number,z:number,rot=0){const g=new THREE.Group();g.position.set(x,0,z);g.rotation.y=rot;scene.add(g);box(.7,.16,.72,0,.6,0,chairMat,g);box(.7,.85,.12,0,1.05,.34,chairMat,g);cylinder(.06,.5,0,.29,0,black,g);for(const a of [0,1.26,2.51,3.77,5.03]){const b=box(.045,.05,.45,Math.sin(a)*.18,.08,Math.cos(a)*.18,black,g);b.rotation.y=a;}for(const x of [-.4,.4])box(.07,.06,.5,x,.88,0,black,g);}
   const interactives:THREE.Object3D[]=[];
+
+  const avatarMixers:THREE.AnimationMixer[]=[];
+  function humanSpecialist(x:number,z:number){
+   new GLTFLoader().load('/models/acquisitions-specialist.glb',gltf=>{
+    if(disposed){gltf.scene.traverse(o=>{if(o instanceof THREE.Mesh){o.geometry.dispose();const ms=Array.isArray(o.material)?o.material:[o.material];ms.forEach(m=>m.dispose());}});return;}
+    const avatar=gltf.scene;avatar.position.set(x,.32,z-1.05);scene.add(avatar);
+    avatar.traverse(o=>{if(o instanceof THREE.Mesh){o.castShadow=true;o.receiveShadow=true;geometry.add(o.geometry);const ms=Array.isArray(o.material)?o.material:[o.material];ms.forEach(m=>{materials.add(m);Object.values(m).forEach(v=>{if(v instanceof THREE.Texture)textures.add(v);});});}});
+    if(gltf.animations.length){const mixer=new THREE.AnimationMixer(avatar);mixer.clipAction(gltf.animations[0]).play();avatarMixers.push(mixer);}
+   },undefined,error=>console.error('Unable to load Acquisitions character',error));
+  }
   function desk(x:number,z:number,id:View,ceo=false){const w=ceo?3.5:2.5;box(w,.14,1.3,x,.91,z,ceo?marbleMat:white);for(const dx of [-w/2+.25,w/2-.25])box(.5,.8,1.15,x+dx,.42,z,ceo?black:cream);box(w,.035,.06,x,.83,z+.66,brass);chair(x,z-1.05,Math.PI);const monitor=box(.92,.59,.055,x,1.38,z+.2,black);cylinder(.04,.2,x,1.02,z+.2,black);box(.3,.025,.23,x,.96,z+.2,black);const screenMat=new THREE.MeshBasicMaterial({color:'#111b19'});materials.add(screenMat);
    const screenshot=id==='dispositions'?{url:'/brand/dispositions-buyers.png',ratio:1738/3010}:id==='acquisitions'?{url:'/brand/acquisitions-pipeline.png',ratio:1732/3016}:null;
    if(screenshot){
@@ -110,10 +121,10 @@ export function LuxuryOffice({view, onSelect, ceiling, quality, paused}: {view:V
    const display=mesh(new THREE.PlaneGeometry(.85,screenshot?.85*screenshot.ratio:.51),screenMat,x,1.38,screenshot?z+.168:z+.232);
    if(screenshot)display.rotation.y=Math.PI;
    if(!screenshot)emblem(x,1.38,z+.236,.35);
-   box(.64,.02,.22,x,.995,z+.49,black);cylinder(.05,.1,x+.9,1.05,z+.4,brass);
+   box(.64,.02,.22,x,.995,z-.38,black);cylinder(.05,.1,x+.9,1.05,z+.4,brass);
    const hit=box(w,2,2,x,1,z,new THREE.MeshBasicMaterial({visible:false}));materials.add(hit.material as THREE.Material);hit.userData.room=id;interactives.push(hit);monitor.userData.room=id;
    if(!ceo){ // One visible avatar per AI department, idle only.
-    cylinder(.19,.58,x,.98,z-1.05,mat('#394039'));mesh(new THREE.SphereGeometry(.16,16,12),mat('#ba9276'),x,1.49,z-1.05);box(.37,.1,.4,x,1.19,z-.8,mat('#394039'));
+    if(id==='acquisitions')humanSpecialist(x,z);else{cylinder(.19,.58,x,.98,z-1.05,mat('#394039'));mesh(new THREE.SphereGeometry(.16,16,12),mat('#ba9276'),x,1.49,z-1.05);box(.37,.1,.4,x,1.19,z-.8,mat('#394039'));}
    }
   }
   function cabinet(x:number,z:number,w=5){box(w,.85,.6,x,.43,z,black);box(w,.045,.64,x,.88,z,wood);for(let dx=-w/2+.5;dx<w/2;dx+=1){box(.025,.1,.025,x+dx,.58,z+.32,brass);cylinder(.1,.18,x+dx,1,z,brass);}box(w,.025,.04,x,.15,z+.32,glow);}
@@ -208,6 +219,7 @@ export function LuxuryOffice({view, onSelect, ceiling, quality, paused}: {view:V
   const resize=new ResizeObserver(()=>{const w=el.clientWidth,h=el.clientHeight;if(!w||!h)return;renderer.setSize(w,h);camera.aspect=w/h;camera.updateProjectionMatrix();});resize.observe(el);
   const clock=new THREE.Clock();function animate(){const dt=Math.min(clock.getDelta(),.05);const st=state.current;if(st.view!==lastView){clearKeys();lastView=st.view;transition=st.view!=='roam';if(st.view==='roam'){camera.position.set(0,1.7,12.9);yaw=0;pitch=0;}controls.enabled=st.view!=='roam';}
    if(st.paused)clearKeys();
+   if(!st.paused)avatarMixers.forEach(m=>m.update(dt));
    city.visible=st.view!=='overview';roof.visible=st.ceiling&&st.view!=='overview';shell.visible=st.view!=='overview';renderer.shadowMap.enabled=st.quality;
    if(transition&&st.view!=='roam'){const pose=poses[st.view],p=new THREE.Vector3(...pose.p as [number,number,number]),t=new THREE.Vector3(...pose.t as [number,number,number]);camera.position.lerp(p,1-Math.exp(-dt*5));controls.target.lerp(t,1-Math.exp(-dt*5));if(camera.position.distanceTo(p)<.025)transition=false;}
    if(st.view==='roam'){
