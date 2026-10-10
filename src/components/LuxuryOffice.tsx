@@ -1,3 +1,4 @@
+import type {AgentId} from './AgentSettings';
 import {createWorkSchedule} from '../utils/workAnimation';
 import {moveWalker,WalkObstacle} from '../utils/walkCollision';
 import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader.js';
@@ -16,10 +17,10 @@ export const rooms = [
 ] as const;
 
 // Architectural scene uses native geometry and reusable materials. No business data is simulated.
-export function LuxuryOffice({view, onSelect, ceiling, quality, paused, onOpenDealDesk}: {view:View; onOpenDealDesk:(v:View)=>void; onSelect:(v:View)=>void; ceiling:boolean; quality:boolean; paused:boolean}) {
- const host=useRef<HTMLDivElement>(null); const state=useRef({view,ceiling,quality,onSelect,paused,onOpenDealDesk});
+export function LuxuryOffice({view, onSelect, ceiling, quality, paused, onOpenDealDesk, onOpenAgent}: {view:View; onOpenAgent:(id:AgentId)=>void; onOpenDealDesk:(v:View)=>void; onSelect:(v:View)=>void; ceiling:boolean; quality:boolean; paused:boolean}) {
+ const host=useRef<HTMLDivElement>(null); const state=useRef({view,ceiling,quality,onSelect,paused,onOpenDealDesk,onOpenAgent});
  const [failed,setFailed]=useState(false);
- useEffect(()=>{state.current={view,ceiling,quality,onSelect,paused,onOpenDealDesk};},[view,ceiling,quality,onSelect,paused,onOpenDealDesk]);
+ useEffect(()=>{state.current={view,ceiling,quality,onSelect,paused,onOpenDealDesk,onOpenAgent};},[view,ceiling,quality,onSelect,paused,onOpenDealDesk,onOpenAgent]);
  useEffect(()=>{
   if(!host.current)return; const el=host.current;
   let renderer:THREE.WebGLRenderer;
@@ -49,24 +50,35 @@ export function LuxuryOffice({view, onSelect, ceiling, quality, paused, onOpenDe
   const stoneMat=mat('#ffffff',.3);stoneMat.map=stone;
   const rugTex=texture(c=>{c.fillStyle='#b6aa96';c.fillRect(0,0,1024,512);for(let i=0;i<23000;i++){c.fillStyle=rnd()>.5?'#c9bfad':'#a69b87';c.fillRect(rnd()*1024,rnd()*512,1+rnd()*4,1+rnd()*3);}});
   const rug=mat('#ffffff',.95);rug.map=rugTex;
+  const ceilingHeight=8, partitionHeight=3.6;
   const building=new THREE.Group();scene.add(building);const roof=new THREE.Group();building.add(roof);const shell=new THREE.Group();building.add(shell);
   box(36,.35,41.5,0,-.2,-6.25,stoneMat); // Tile seams stay restrained.
   for(let x=-18;x<18;x+=2)box(.014,.008,41.5,x,.002,-6.25,mat('#bcb19d',.8));
   for(let z=-26;z<15;z+=2)box(36,.008,.014,0,.002,z,mat('#bcb19d',.8));
-  box(36,.7,.22,0,.35,-27,cream,shell);box(.22,4.6,41.5,-18,2.3,-6.25,cream,shell);box(.22,4.6,41.5,18,2.3,-6.25,cream,shell);
-  box(36,.12,41.5,0,4.6,-6.25,white,roof);
+  box(36,.7,.22,0,.35,-27,cream,shell);box(.22,ceilingHeight,41.5,-18,ceilingHeight/2,-6.25,cream,shell);box(.22,ceilingHeight,41.5,18,ceilingHeight/2,-6.25,cream,shell);
+  box(36,.12,41.5,0,ceilingHeight,-6.25,white,roof);
   // Walnut ceiling inset and warm perimeter coves.
-  for(let x=-6.5;x<=6.5;x+=.22)box(.11,.13,39,x,4.48,-6.4,wood,roof);
-  for(const x of [-7,7])box(.07,.04,40,x,4.38,-6.4,glow,roof);
-  for(const x of [-16,-12,12,16])for(const z of [-24,-17,-11,-4,4,11]){cylinder(.09,.025,x,4.43,z,glow,roof);}
-  for(const [r,y] of [[1.65,3.8],[1.25,3.3]]){const ring=mesh(new THREE.TorusGeometry(r,.045,8,64),glow,0,y,2,roof);ring.rotation.x=Math.PI/2;for(const x of [-r,r])box(.014,4.5-y,.014,x,(4.5+y)/2,2,brass,roof);}
+  for(let x=-6.5;x<=6.5;x+=.22)box(.11,.13,39,x,ceilingHeight-.12,-6.4,wood,roof);
+  for(const x of [-7,7])box(.07,.04,40,x,ceilingHeight-.22,-6.4,glow,roof);
+  for(const x of [-16,-12,12,16])for(const z of [-24,-17,-11,-4,4,11]){cylinder(.09,.025,x,ceilingHeight-.17,z,glow,roof);}
+  for(const [r,y] of [[2.1,6.6],[1.6,5.8]]){const ring=mesh(new THREE.TorusGeometry(r,.045,8,64),glow,0,y,2,roof);ring.rotation.x=Math.PI/2;for(const x of [-r,r])box(.014,ceilingHeight-.1-y,.014,x,(ceilingHeight-.1+y)/2,2,brass,roof);}
   // Skyline is a lightweight architectural backdrop, not a photograph of specific properties.
   const city=new THREE.Group();scene.add(city);const skylineMat=mat('#879ea9',.8);
   for(let i=0;i<48;i++){const x=-40+i*1.7,h=2+rnd()*9;box(.7+rnd(),h,1.5,x,h/2,-43-rnd()*7,skylineMat,city);}
   for(let i=0;i<18;i++)cylinder(.3,1.2,-16+i*2,4,-38,mat('#79906c'),city);
   // Rear windows and black mullions; upper panes remain visible in arrival view.
-  for(let x=-15;x<=15;x+=3){box(2.85,3.3,.035,x,2.75,-26.85,glass);box(.06,4.4,.08,x-1.5,2.2,-26.7,black);}
-  function partition(x1:number,z1:number,x2:number,z2:number){const len=Math.hypot(x2-x1,z2-z1),vertical=x1===x2;const x=(x1+x2)/2,z=(z1+z2)/2;box(vertical?.035:len,3.5,vertical?len:.035,x,1.85,z,glass);box(vertical?.09:len,.065,vertical?len:.09,x,3.62,z,black);box(vertical?.09:len,.065,vertical?len:.09,x,.08,z,black);const n=Math.ceil(len/2.7);for(let i=0;i<=n;i++){box(.065,3.6,.065,x1+(x2-x1)*i/n,1.8,z1+(z2-z1)*i/n,black);}}
+  function exteriorWindows(left:number,right:number,z:number,frameZ:number){
+   const bays=Math.round((right-left)/3), width=(right-left)/bays;
+   for(let i=0;i<bays;i++){
+    const x=left+(i+.5)*width;
+    box(width-.15,ceilingHeight-1.1,.035,x,(ceilingHeight+1.1)/2,z,glass);
+    box(width,.06,.08,x,4.2,frameZ,black);
+    for(const y of [1.1,ceilingHeight-.03])box(width,.06,.08,x,y,frameZ,black);
+   }
+   for(let i=0;i<=bays;i++)box(.06,ceilingHeight,.08,left+i*width,ceilingHeight/2,frameZ,black);
+  }
+  exteriorWindows(-16.5,16.5,-26.85,-26.7);
+  function partition(x1:number,z1:number,x2:number,z2:number){const len=Math.hypot(x2-x1,z2-z1),vertical=x1===x2;const x=(x1+x2)/2,z=(z1+z2)/2;box(vertical?.035:len,3.5,vertical?len:.035,x,1.85,z,glass);box(vertical?.09:len,.065,vertical?len:.09,x,3.62,z,black);box(vertical?.09:len,.065,vertical?len:.09,x,.08,z,black);const n=Math.ceil(len/2.7);for(let i=0;i<=n;i++){box(.065,partitionHeight,.065,x1+(x2-x1)*i/n,partitionHeight/2,z1+(z2-z1)*i/n,black);}}
   // Interior doors are represented by brass pulls and an open corridor-side gap.
   function front(x:number,z1:number,z2:number,doorZ:number, opposite=false){
    // A full-height framed doorway with a glass leaf swung 90° into the suite.
@@ -114,6 +126,7 @@ export function LuxuryOffice({view, onSelect, ceiling, quality, paused, onOpenDe
    new GLTFLoader().load(url,gltf=>{
     if(disposed){gltf.scene.traverse(o=>{if(o instanceof THREE.Mesh){o.geometry.dispose();const ms=Array.isArray(o.material)?o.material:[o.material];ms.forEach(m=>m.dispose());}});return;}
     const avatar=gltf.scene;avatar.scale.setScalar(1.2);avatar.position.set(x,.037,z-1.05);scene.add(avatar);
+    avatar.traverse(o=>{if(o instanceof THREE.Mesh){o.userData.agent=working?scheduleId:'receptionist';interactives.push(o);}});
     avatar.traverse(o=>{if(o instanceof THREE.Mesh){o.castShadow=true;o.receiveShadow=true;geometry.add(o.geometry);const ms=Array.isArray(o.material)?o.material:[o.material];ms.forEach(m=>{materials.add(m);Object.values(m).forEach(v=>{if(v instanceof THREE.Texture)textures.add(v);});});}});
     const bones=new Map<string,THREE.Bone>();avatar.traverse(o=>{if(o instanceof THREE.Bone)bones.set(o.name.replace(/[^a-z0-9]/gi,'').toLowerCase(),o);});
     // Bind-space frames let mirrored fingers match despite different left/right bone axes.
@@ -289,7 +302,7 @@ export function LuxuryOffice({view, onSelect, ceiling, quality, paused, onOpenDe
   function sofa(x:number,z:number,rot:number){const g=new THREE.Group();g.position.set(x,0,z);g.rotation.y=rot;scene.add(g);box(3.5,.5,1.15,0,.38,0,white,g);box(3.5,.7,.2,0,.92,-.48,white,g);for(const dx of [-1.7,1.7])box(.25,.66,1.2,dx,.68,0,white,g);for(const dx of [-1.4,1.4])box(.5,.5,.18,dx,.86,-.27,mat('#8c7953'),g);box(3.4,.04,.1,0,.12,.5,brass,g);}
   sofa(-5.8,7,Math.PI/2);sofa(5.8,7,-Math.PI/2);for(const x of [-2.8,2.8])for(const z of [3.6,10.2]){box(.95,.45,1,x,.33,z,white);box(.95,.65,.17,x,.82,z+(z<7?-.45:.45),white);}
   for(const x of [-2.6,2.6]){box(1.35,.48,2.5,x,.27,7,marbleMat);box(1.35,.025,2.5,x,.055,7,glow);cylinder(.17,.3,x,.68,7,black);for(let i=0;i<6;i++)mesh(new THREE.SphereGeometry(.09,8,8),white,x+Math.sin(i)*.2,.93,7+Math.cos(i)*.2);}
-  for(const x of [-6.8,6.8])for(const z of [3,11.5])plant(x,z,1.15);
+  for(const x of [-6.8,6.8])plant(x,11.5,1.15);
   // Expanded conference suite spans the entire former conference/support wing.
   box(6.6,.02,11,-13.5,.025,7,rug);
   box(3.8,.13,7,-13.5,.85,7,marbleMat);box(1,.75,5,-13.5,.4,7,black);
@@ -305,7 +318,10 @@ export function LuxuryOffice({view, onSelect, ceiling, quality, paused, onOpenDe
   mesh(new THREE.PlaneGeometry(4.3,4.3*1738/3016),tvMat,-17.69,2.25,7).rotation.y=Math.PI/2;
   for(const x of [-17,17])for(const z of [-12,12])plant(x,z,1.1);
   // Entrance: matched double glass leaves with perimeter rails, transom and brass pulls.
-  partition(-18,14.3,-1.5,14.3);partition(1.5,14.3,18,14.3);
+  exteriorWindows(-18,-1.5,14.3,14.2);exteriorWindows(1.5,18,14.3,14.2);
+  box(3,ceilingHeight-3.55,.035,0,(ceilingHeight+3.55)/2,14.3,glass);
+  for(const x of [-1.5,1.5])box(.06,ceilingHeight-3.55,.08,x,(ceilingHeight+3.55)/2,14.2,black);
+  for(const y of [4.2,ceilingHeight-.03])box(3,.06,.08,0,y,14.2,black);
   for(const x of [-1.5,1.5])box(.1,3.55,.12,x,1.775,14.3,black);
   box(3.1,.1,.12,0,3.5,14.3,black);box(3,.035,.14,0,.03,14.3,brass);
   box(3,.035,.1,0,2.95,14.3,black);box(2.9,.46,.035,0,3.22,14.3,glass);
@@ -323,7 +339,7 @@ export function LuxuryOffice({view, onSelect, ceiling, quality, paused, onOpenDe
   }
   const ambient=new THREE.HemisphereLight('#fff4df','#958571',2);scene.add(ambient);
   const sun=new THREE.DirectionalLight('#fff0d1',3);sun.position.set(-10,20,-8);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);sun.shadow.camera.left=-20;sun.shadow.camera.right=20;sun.shadow.camera.top=20;sun.shadow.camera.bottom=-20;sun.shadow.normalBias=.035;scene.add(sun);
-  for(const [x,z] of [[0,1],[-13,-6],[13,-6],[13,6],[0,-22],[-10,-22],[10,-22]]){const light=new THREE.PointLight('#ffe0aa',32,13,2);light.position.set(x,3.9,z);scene.add(light);}
+  for(const [x,z] of [[0,1],[-13,-6],[13,-6],[13,6],[0,-22],[-10,-22],[10,-22]]){const light=new THREE.PointLight('#ffe0aa',65,20,2);light.position.set(x,ceilingHeight-1.1,z);scene.add(light);}
   // Static collision footprints come from the same transformed geometry as the visible scene.
   // Thin glass partitions and fully open door leaves remain solid; doorway gaps stay clear.
   scene.updateMatrixWorld(true);
@@ -349,7 +365,7 @@ export function LuxuryOffice({view, onSelect, ceiling, quality, paused, onOpenDe
   const ray=new THREE.Raycaster(),pointer=new THREE.Vector2();let down={x:0,y:0},drag=false;
   function pointerDown(e:PointerEvent){down={x:e.clientX,y:e.clientY};drag=false;if(state.current.view==='roam'&&!state.current.paused&&e.button===0){looking=true;renderer.domElement.setPointerCapture(e.pointerId);renderer.domElement.style.cursor='grabbing';}}
   function pointerMove(e:PointerEvent){if(Math.hypot(e.clientX-down.x,e.clientY-down.y)>5)drag=true;if(looking&&state.current.view==='roam'&&!state.current.paused){yaw-=(e.clientX-down.x)*.004;pitch=THREE.MathUtils.clamp(pitch-(e.clientY-down.y)*.004,-1.1,1.1);down={x:e.clientX,y:e.clientY};}}
-  function pointerUp(e:PointerEvent){looking=false;renderer.domElement.style.cursor=state.current.view==='roam'?'grab':'default';if(renderer.domElement.hasPointerCapture(e.pointerId))renderer.domElement.releasePointerCapture(e.pointerId);if(state.current.paused||drag||e.target!==renderer.domElement)return;const rect=el.getBoundingClientRect();pointer.set((e.clientX-rect.left)/rect.width*2-1,-(e.clientY-rect.top)/rect.height*2+1);ray.setFromCamera(pointer,camera);const hits=ray.intersectObjects(interactives);const screen=hits.find(h=>h.object.userData.dealdesk);if(screen)state.current.onOpenDealDesk(screen.object.userData.room);else if(state.current.view!=='roam'&&hits[0])state.current.onSelect(hits[0].object.userData.room);}
+  function pointerUp(e:PointerEvent){looking=false;renderer.domElement.style.cursor=state.current.view==='roam'?'grab':'default';if(renderer.domElement.hasPointerCapture(e.pointerId))renderer.domElement.releasePointerCapture(e.pointerId);if(state.current.paused||drag||e.target!==renderer.domElement)return;const rect=el.getBoundingClientRect();pointer.set((e.clientX-rect.left)/rect.width*2-1,-(e.clientY-rect.top)/rect.height*2+1);ray.setFromCamera(pointer,camera);const hits=ray.intersectObjects(interactives);const target=hits.find(h=>h.object.userData.agent||h.object.userData.dealdesk);const screen=target?.object.userData.dealdesk?target:undefined;if(target?.object.userData.agent)state.current.onOpenAgent(target.object.userData.agent);else if(screen)state.current.onOpenDealDesk(screen.object.userData.room);else if(state.current.view!=='roam'&&hits[0])state.current.onSelect(hits[0].object.userData.room);}
   renderer.domElement.addEventListener('pointerdown',pointerDown);renderer.domElement.addEventListener('pointermove',pointerMove);renderer.domElement.addEventListener('pointerup',pointerUp);renderer.domElement.addEventListener('pointercancel',clearKeys);
   controls.addEventListener('start',()=>{transition=false;});
   const resize=new ResizeObserver(()=>{const w=el.clientWidth,h=el.clientHeight;if(!w||!h)return;renderer.setSize(w,h);camera.aspect=w/h;camera.updateProjectionMatrix();});resize.observe(el);

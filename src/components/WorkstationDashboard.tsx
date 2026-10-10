@@ -15,11 +15,11 @@ const profiles:Record<string,{title:string;initials:string;description:string;wo
 const money=(v:number)=>v.toLocaleString('en-US',{style:'currency',currency:'USD',maximumFractionDigits:0});
 export function WorkstationDashboard({room,onRoom,onClose,onFocus}:{room:View|null;onRoom:(v:View)=>void;onClose:()=>void;onFocus:(v:View)=>void}){
  const [tab,setTab]=useState(tabs[0]);const [arv,setArv]=useState(1850000);const [strategy,setStrategy]=useState('Teardown');const [percent,setPercent]=useState(20);const [query,setQuery]=useState('');const [filter,setFilter]=useState('All');
- const [password,setPassword]=useState('');const [authenticated,setAuthenticated]=useState(false);const [busy,setBusy]=useState(false);const [error,setError]=useState('');const [snapshot,setSnapshot]=useState<CrmSnapshot>(emptySnapshot);const [errors,setErrors]=useState<Partial<Record<CrmTable,string>>>({});const [updated,setUpdated]=useState('');const request=useRef<AbortController|null>(null);const sessionChecked=useRef(false);
+ const [password,setPassword]=useState('');const [authenticated,setAuthenticated]=useState(false);const [busy,setBusy]=useState(false);const [error,setError]=useState('');const [snapshot,setSnapshot]=useState<CrmSnapshot>(emptySnapshot);const [errors,setErrors]=useState<Partial<Record<CrmTable,string>>>({});const [updated,setUpdated]=useState('');const request=useRef<AbortController|null>(null);
  function disconnect(){void fetch('/api/dealdesk',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({action:'logout'})});request.current?.abort();setAuthenticated(false);setPassword('');setSnapshot(emptySnapshot());setErrors({});setError('');setBusy(false);setUpdated('');}
- useEffect(()=>{if(room){setTab(tabs[0]);if(!sessionChecked.current){sessionChecked.current=true;void connect(true);}}},[room]);
+ useEffect(()=>{if(room)setTab(tabs[0]);},[room]);
  useEffect(()=>()=>request.current?.abort(),[]);
- async function connect(silent=false){
+ async function connect(){
   request.current?.abort();const controller=new AbortController();request.current=controller;setBusy(true);setError('');
   try {
    const deals=await readAll('Deals',password,controller.signal);
@@ -28,7 +28,7 @@ export function WorkstationDashboard({room,onRoom,onClose,onFocus}:{room:View|nu
    await Promise.all(crmTables.filter(t=>t!=='Deals').map(async table=>{try{next[table]=await readAll(table,password,controller.signal);}catch(e){if(!controller.signal.aborted)failures[table]=e instanceof Error?e.message:'Read failed.';}}));
    if(controller.signal.aborted)return;
    setSnapshot(next);setErrors(failures);setAuthenticated(true);setPassword('');setUpdated(new Date().toLocaleString());
-  }catch(e){if(!controller.signal.aborted&&!silent)setError(e instanceof Error?e.message:'Connection failed.');}
+  }catch(e){if(!controller.signal.aborted)setError(e instanceof Error?e.message:'Connection failed.');}
   finally{if(!controller.signal.aborted)setBusy(false);}
  }
  if(!authenticated)return <div className="wd-login"><button className="wd-login-close" onClick={onClose} aria-label="Close workstation">×</button><img src="/brand/emblem.png" alt="AZRE"/><span className="eyebrow">PRIVATE HEADQUARTERS</span><h2>Welcome to DealDesk</h2><p>Sign in to review your company’s deals, buyers, contacts and tasks.</p><form className="wd-inputs" onSubmit={e=>{e.preventDefault();void connect();}}><label>Office access password<input autoFocus type="password" autoComplete="current-password" value={password} onChange={e=>setPassword(e.target.value)} required disabled={busy}/></label><button className="wd-launch" disabled={busy}>{busy?'Connecting to DealDesk…':'Sign in to dashboard'}</button></form>{error&&<p role="alert" className="wd-login-error">{error}</p>}<small>Sign in once for up to eight hours across all workstation screens. Use your office access password (at least 8 characters). Your DealDesk account password is used only inside Live DealDesk.</small></div>;
