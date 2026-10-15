@@ -1,3 +1,4 @@
+import {operationsEmployee} from '../utils/workforceDirectory';
 import React, { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
@@ -684,7 +685,7 @@ export const Office3D: React.FC<Office3DProps> = ({
     addPlant(-11.5, 3.0);
 
     // 3. Operations (Bottom Left)
-    buildDepartmentWorkstation('operations', -7.5, 8.3, 'David Sterling');
+    buildDepartmentWorkstation('operations', -7.5, 8.3, operationsEmployee.name);
     addPlant(-11.5, 5.5);
     addPlant(-11.5, 11.5, 1.3);
 

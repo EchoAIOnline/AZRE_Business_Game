@@ -1,0 +1,25 @@
+{
+  "name": "azre-ai-workforce",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "scripts": {
+    "start": "node --env-file-if-exists=.env src/cli.js serve",
+    "audit": "node --env-file-if-exists=.env src/cli.js run daily-audit",
+    "test": "node --test test/*.test.js",
+    "live:read": "node --env-file-if-exists=.env src/cli.js verify",
+    "dev:chat": "node scripts/serve-local.js serve"
+  },
+  "dependencies": {
+    "@openai/agents": "0.20.0",
+    "dotenv": "^17.2.3",
+    "js-tiktoken": "^1.0.21",
+    "markdown-it": "^15.0.2",
+    "node-cron": "^4.2.1",
+    "pdfjs-dist": "^6.4.299",
+    "zod": "^4.0.0"
+  }
+}

@@ -1,0 +1,89 @@
+{
+  "seconds": "348.7",
+  "poses": [
+    {
+      "id": "acquisitions",
+      "maxStep": 0.17038331737524887,
+      "finite": true,
+      "phases": [
+        "SEATED",
+        "STANDING_UP",
+        "OUTBOUND",
+        "STANDING_IDLE",
+        "RETURNING",
+        "ALIGNING",
+        "SITTING_DOWN"
+      ],
+      "deskPhases": [
+        "Seated",
+        "SitToType",
+        "Mouse",
+        "TypeToSit"
+      ],
+      "layer": "library"
+    },
+    {
+      "id": "dispositions",
+      "maxStep": 0.11461292442536222,
+      "finite": true,
+      "phases": [
+        "SEATED",
+        "STANDING_UP",
+        "OUTBOUND",
+        "STANDING_IDLE",
+        "RETURNING",
+        "ALIGNING",
+        "SITTING_DOWN"
+      ],
+      "deskPhases": [
+        "Seated",
+        "SitToType",
+        "Mouse",
+        "TypeToSit"
+      ],
+      "layer": "library"
+    },
+    {
+      "id": "operations",
+      "maxStep": 0.11248238354581913,
+      "finite": true,
+      "phases": [
+        "SEATED",
+        "STANDING_UP",
+        "OUTBOUND",
+        "STANDING_IDLE",
+        "RETURNING",
+        "ALIGNING",
+        "SITTING_DOWN"
+      ],
+      "deskPhases": [
+        "Seated",
+        "SitToType",
+        "Mouse",
+        "TypeToSit"
+      ],
+      "layer": "library"
+    },
+    {
+      "id": "receptionist",
+      "maxStep": 0.1025960768564843,
+      "finite": true,
+      "phases": [
+        "SEATED",
+        "STANDING_UP",
+        "OUTBOUND",
+        "STANDING_IDLE",
+        "RETURNING",
+        "ALIGNING",
+        "SITTING_DOWN"
+      ],
+      "deskPhases": [],
+      "layer": "library"
+    }
+  ],
+  "performance": {
+    "fps": 98,
+    "calls": 1512,
+    "triangles": 545306
+  }
+}

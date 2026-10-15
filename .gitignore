@@ -6,3 +6,15 @@ coverage/
 *.log
 .env*
 !.env.example
+
+# Local reference checkouts and generated CRM previews are not project source.
+/review-AZRE-DealDesk/
+/dealdesk-queue-update/
+/dealdesk-visual-preview/
+# Never publish local databases, backups, credentials or service output.
+*.sqlite
+*.sqlite-*
+*.db
+*.db-*
+*.pem
+*.key

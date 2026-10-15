@@ -1,0 +1,84 @@
+{
+  "vaultPath": "/Users/asharizakar/Desktop/Zakarian Desktop/Projects/Obsidian AI/AZG Knowledge Base",
+  "scope": "Ashari Zakar Real Estate",
+  "approval": {
+    "approvedBy": "CEO",
+    "approvedOn": "2026-10-14",
+    "basis": "CEO authorized these corporate sources for knowledge use. This does not grant operating-policy authority to every document; authority is classified explicitly per document.",
+    "kind": "source-use-authorization"
+  },
+  "documents": [
+    "Ashari Zakar Real Estate.md",
+    "Overview/Ashari Zakar Real Estate, LLC - Bio.md",
+    "Acquisitions/AZRE Acquisitions Playbook.md",
+    "Acquisitions/AZRE Buy Box.md",
+    "Acquisitions/AZRE Acquisitions Playbook Outline.md",
+    "Acquisitions/Agent Relationship System.md",
+    "Acquisitions/Takedown Method (Wholetailing).md",
+    "Acquisitions/Tools/AZRE Purchase Terms.pdf",
+    "Acquisitions/Full AZRE Acquisitions Playbook PDF.pdf",
+    "Marketing/AZRE Marketing Overview.md",
+    "Technology/AZRE DealDesk Command Center.md"
+  ],
+  "historical": [
+    "Acquisitions/Takedown Method (Wholetailing).md"
+  ],
+  "conflictGroups": [
+    {
+      "topic": "Acquisition criteria and exit strategy",
+      "paths": [
+        "Acquisitions/AZRE Buy Box.md",
+        "Acquisitions/AZRE Acquisitions Playbook.md",
+        "Acquisitions/Takedown Method (Wholetailing).md",
+        "Overview/Ashari Zakar Real Estate, LLC - Bio.md"
+      ],
+      "reason": "Buy Box and Playbook differ on build years, spread floors and acquisition criteria; Bio and strategy reference describe broader holding/renovation strategies. Do not silently select a current policy.",
+      "reviewStatus": "contradictory-source-notes-retained-for-review",
+      "currentAuthority": "policies/current-operating-standards.md",
+      "resolution": "CEO-established standards govern covered acquisition screening, default contract terms, communications and queue rules. Other unspecified criteria remain subject to review."
+    },
+    {
+      "topic": "Purchase contract timing and earnest money",
+      "paths": [
+        "Acquisitions/Tools/AZRE Purchase Terms.pdf",
+        "Acquisitions/AZRE Acquisitions Playbook.md",
+        "Acquisitions/Full AZRE Acquisitions Playbook PDF.pdf"
+      ],
+      "reason": "Purchase Terms PDF specifies preferred 10 business day due diligence and 5 business day earnest-money timing; Playbook specifies 7 day due diligence and 3 business day earnest-money timing. CEO review is required before selecting contract terms.",
+      "reviewStatus": "contradictory-source-notes-retained-for-review",
+      "currentAuthority": "policies/current-operating-standards.md",
+      "resolution": "CEO-established standards govern covered acquisition screening, default contract terms, communications and queue rules. Other unspecified criteria remain subject to review."
+    }
+  ],
+  "excluded": [
+    "Private Lenders/**",
+    "Deals/**",
+    "Dispositions/ATL Buyer Research/**",
+    "Overview/*Basic Information*",
+    "Overview/AZRE Deal Stories.md",
+    "Acquisitions/Acquisitions Research/**",
+    "Administration/**",
+    "all other vault folders and unlisted documents"
+  ],
+  "externalEmbeddings": false,
+  "apiExcerptAuthorization": {
+    "authorized": true,
+    "authorizedBy": "CEO",
+    "authorizedOn": "2026-10-14",
+    "scope": "Selected nonconfidential corporate excerpts up to approximately 10 KB per search; no external embeddings."
+  },
+  "documentAuthority": {
+    "Ashari Zakar Real Estate.md": "corporate-identity-record",
+    "Overview/Ashari Zakar Real Estate, LLC - Bio.md": "corporate-identity-record",
+    "Acquisitions/AZRE Acquisitions Playbook.md": "reference-document",
+    "Acquisitions/AZRE Buy Box.md": "reference-document",
+    "Acquisitions/AZRE Acquisitions Playbook Outline.md": "reference-document",
+    "Acquisitions/Agent Relationship System.md": "reference-document",
+    "Acquisitions/Takedown Method (Wholetailing).md": "historical-document",
+    "Acquisitions/Tools/AZRE Purchase Terms.pdf": "reference-document",
+    "Acquisitions/Full AZRE Acquisitions Playbook PDF.pdf": "reference-document",
+    "Marketing/AZRE Marketing Overview.md": "reference-document",
+    "Technology/AZRE DealDesk Command Center.md": "reference-document"
+  },
+  "authorityBasis": "Document classification is explicit; permission to use a source is not operating-policy approval. Current operating policy is maintained separately."
+}

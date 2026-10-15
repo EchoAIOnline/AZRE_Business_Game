@@ -1,0 +1,15 @@
+import {DatabaseSync} from 'node:sqlite';
+import {mkdirSync} from 'node:fs';
+import {dirname} from 'node:path';
+import {randomUUID} from 'node:crypto';
+export class Store {
+ constructor(path){mkdirSync(dirname(path),{recursive:true,mode:0o700});this.db=new DatabaseSync(path);this.db.exec(`PRAGMA journal_mode=WAL; PRAGMA busy_timeout=5000; CREATE TABLE IF NOT EXISTS runs(id TEXT PRIMARY KEY, workflow TEXT, state TEXT, started TEXT, ended TEXT, report TEXT, error TEXT); CREATE TABLE IF NOT EXISTS locks(workflow TEXT PRIMARY KEY, owner TEXT, expires INTEGER); CREATE TABLE IF NOT EXISTS schedule_slots(slot TEXT PRIMARY KEY, created INTEGER);`);}
+ start(workflow,ttl=180000){const id=randomUUID(),now=Date.now();this.db.exec('BEGIN IMMEDIATE');try{const old=this.db.prepare('SELECT * FROM locks WHERE workflow=?').get(workflow);if(old&&old.expires>now){this.db.exec('ROLLBACK');return null;}if(old)this.db.prepare("UPDATE runs SET state='Error',ended=?,error='LEASE_EXPIRED' WHERE id=? AND state='Working'").run(new Date().toISOString(),old.owner);this.db.prepare('INSERT OR REPLACE INTO locks VALUES(?,?,?)').run(workflow,id,now+ttl);this.db.prepare("INSERT INTO runs(id,workflow,state,started) VALUES(?,?,'Working',?)").run(id,workflow,new Date().toISOString());this.db.exec('COMMIT');return id;}catch(e){this.db.exec('ROLLBACK');throw e;}}
+ finish(id,state,report,error=null){this.db.exec('BEGIN IMMEDIATE');try{const lock=this.db.prepare('SELECT * FROM locks WHERE owner=?').get(id);if(!lock||lock.expires<Date.now())throw new Error('LEASE_LOST');this.db.prepare('UPDATE runs SET state=?,ended=?,report=?,error=? WHERE id=?').run(state,new Date().toISOString(),report?JSON.stringify(report):null,error,id);this.db.prepare('DELETE FROM locks WHERE owner=?').run(id);this.db.exec('COMMIT');}catch(e){this.db.exec('ROLLBACK');throw e;}}
+ claimSlot(slot){this.db.prepare('DELETE FROM schedule_slots WHERE created<?').run(Date.now()-30*86400000);return this.db.prepare('INSERT OR IGNORE INTO schedule_slots VALUES(?,?)').run(slot,Date.now()).changes===1;}
+ history(){return this.db.prepare('SELECT id,workflow,state,started,ended,error FROM runs ORDER BY started DESC,rowid DESC LIMIT 100').all();}
+ operationalHistory(){return this.db.prepare("SELECT report FROM runs WHERE report IS NOT NULL AND started>=? ORDER BY started DESC,rowid DESC LIMIT 1000").all(new Date(Date.now()-31*86400000).toISOString()).map(r=>JSON.parse(r.report));}
+ latest(){const row=this.db.prepare('SELECT * FROM runs ORDER BY started DESC,rowid DESC LIMIT 1').get();return row?{...row,report:row.report?JSON.parse(row.report):null}:null;}
+ status(){const latest=this.latest();const locks=this.db.prepare('SELECT workflow,owner,expires FROM locks WHERE expires>?').all(Date.now());return {agent:'AZRE Operations Manager',state:locks.length?'Working':latest?.state||'Idle',currentWorkflows:locks.map(l=>l.workflow),lastExecution:latest?.ended||latest?.started||null,taskProgress:locks.length?'Retrieving or auditing records':null};}
+ close(){this.db.close();}
+}

@@ -1,0 +1,14 @@
+import fs from 'node:fs';import path from 'node:path';import os from 'node:os';import {spawnSync} from 'node:child_process';import {fileURLToPath} from 'node:url';
+export const label='com.azre.ai-workforce';
+const escape=s=>s.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;');
+export function backgroundDefinition(root,node){return `<?xml version="1.0" encoding="UTF-8"?>\n<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">\n<plist version="1.0"><dict><key>Label</key><string>${label}</string><key>ProgramArguments</key><array><string>${escape(node)}</string><string>${escape(path.join(root,'scripts/serve-local.js'))}</string><string>serve</string></array><key>WorkingDirectory</key><string>${escape(root)}</string><key>RunAtLoad</key><true/><key>KeepAlive</key><true/><key>ThrottleInterval</key><integer>30</integer><key>ProcessType</key><string>Background</string><key>StandardOutPath</key><string>${escape(path.join(root,'data/background.stdout.log'))}</string><key>StandardErrorPath</key><string>${escape(path.join(root,'data/background.stderr.log'))}</string></dict></plist>\n`;}
+if(process.argv[1]&&path.resolve(process.argv[1])===fileURLToPath(import.meta.url)){
+ if(process.platform!=='darwin')throw Error('This installer is for macOS user LaunchAgents. Use the documented Node server under a process supervisor on other systems.');
+ const root=path.resolve(fileURLToPath(new URL('..',import.meta.url))),plist=path.join(os.homedir(),'Library/LaunchAgents',label+'.plist'),domain='gui/'+process.getuid(),service=domain+'/'+label,command=process.argv[2];
+ const run=(args,required=true)=>{const r=spawnSync('/bin/launchctl',args,{encoding:'utf8'});if(required&&r.status!==0)throw Error('LAUNCH_SERVICE_OPERATION_FAILED');return r;};
+ if(command==='install'){fs.mkdirSync(path.dirname(plist),{recursive:true});fs.mkdirSync(path.join(root,'data'),{recursive:true,mode:0o700});if(fs.existsSync(plist)&&!fs.readFileSync(plist,'utf8').includes(escape(path.join(root,'scripts/serve-local.js'))))throw Error('BACKGROUND_SERVICE_CONFLICT');fs.writeFileSync(plist,backgroundDefinition(root,process.execPath),{mode:0o600});run(['bootout',service],false);run(['enable',service]);run(['bootstrap',domain,plist]);console.log(JSON.stringify({installed:true,label,plist}));}
+ else if(command==='restart'){run(['kickstart','-k',service]);console.log(JSON.stringify({restarted:true,label}));}
+ else if(command==='stop'){run(['bootout',service]);run(['disable',service]);console.log(JSON.stringify({stopped:true,label}));}
+ else if(command==='status'){const r=run(['print',service],false);console.log(JSON.stringify({label,loaded:r.status===0,state:r.stdout.match(/state = (\w+)/)?.[1]||null,pid:Number(r.stdout.match(/pid = (\d+)/)?.[1])||null}));}
+ else throw Error('Use install, status, restart or stop');
+}

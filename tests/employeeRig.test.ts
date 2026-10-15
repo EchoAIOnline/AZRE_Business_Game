@@ -1,0 +1,14 @@
+import assert from 'node:assert/strict';
+import * as THREE from 'three';
+import {employeeBoneKey,validateEmployeeClip,inspectEmployeeRig} from '../src/utils/employeeRig';
+assert.equal(employeeBoneKey('mixamorig:LeftForeArm'),'bip01lforearm');
+assert.equal(employeeBoneKey('mixamorig_RightHandIndex3'),'bip01rfinger12');
+assert.equal(employeeBoneKey('Bip01 L Finger12'),'bip01lfinger12');
+const scene=new THREE.Group(),bone=new THREE.Bone();bone.name='mixamorigHips';scene.add(bone);
+const clip=new THREE.AnimationClip('Idle',1,[new THREE.QuaternionKeyframeTrack('mixamorigHips.quaternion',[0,1],[0,0,0,1,0,0,0,1])]);
+validateEmployeeClip(scene,clip);
+assert.equal(inspectEmployeeRig(scene).convention,'mixamo');
+assert.ok(inspectEmployeeRig(scene).missing.length>0);
+assert.throws(()=>validateEmployeeClip(scene,new THREE.AnimationClip('Wrong rig',1,[new THREE.VectorKeyframeTrack('OtherHips.position',[0,1],[0,0,0,0,0,0])])),/Unbound/);
+assert.equal(bone.name,'mixamorigHips','semantic aliases never rename skeletons');
+console.log('Mixamo semantic bone lookup and incompatible clip rejection passed');

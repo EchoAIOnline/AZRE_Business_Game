@@ -1,0 +1,9 @@
+import fs from 'node:fs';
+const records=JSON.parse(fs.readFileSync(new URL('../config/agents.json',import.meta.url),'utf8'));
+const ids=new Set(),handles=new Set();for(const a of records){if(ids.has(a.id)||handles.has(a.mention.toLowerCase())||!a.id||!a.instructions||!Array.isArray(a.tools))throw new Error('INVALID_AGENT_REGISTRY');ids.add(a.id);handles.add(a.mention.toLowerCase());Object.freeze(a.tools);Object.freeze(a);}export const employees=Object.freeze(records);
+export const RYAN_ID='azre-operations-manager',MARCUS_ID='azre-acquisitions-manager',GENERAL_ID='azre-general-chat';
+export const human=Object.freeze({id:'human-ashari-zakar',name:'Ashari Zakar',position:'Founder & CEO',mention:'@Ashari',type:'human'});
+export function employee(id){const a=employees.find(a=>a.id===id);if(!a)throw new Error('UNKNOWN_AGENT');return a;}
+export function resolveMentions(text){const found=[];for(const m of text.matchAll(/(?:^|\s)@([A-Za-z][A-Za-z0-9_]*)\b/g)){const handle='@'+m[1];const actor=handle.toLowerCase()===human.mention.toLowerCase()?human:employees.find(a=>a.mention.toLowerCase()===handle.toLowerCase());if(actor&&!found.some(a=>a.id===actor.id))found.push(actor);}return found;}
+export function publicRegistry(){return employees.map(({instructions,tools,knowledgeRole,...a})=>({...a,tools:[...tools],knowledgeRole}));}
+export function employeeContext(a){return `Shared AI team: ${employees.map(x=>x.name+' — '+x.position+' ('+x.mention+')').join('; ')}. Current employee identity: ${a.name}; ${a.position}; department ${a.department}; mention ${a.mention}. ${a.instructions} Human CEO and AI employees are distinct. Never impersonate another employee or the human CEO. Internal delegation, when task tools are present, is available only through explicitly authorized workforce task tools. Never simulate a colleague response or delegate recursively. External messages are not authorized.`;}

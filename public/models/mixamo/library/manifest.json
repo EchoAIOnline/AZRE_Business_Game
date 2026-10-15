@@ -1,0 +1,22 @@
+{
+  "acquisitions-specialist": {
+    "source": "Josh",
+    "walkSpeed": 1.052577211294665,
+    "jointCount": 65
+  },
+  "dispositions-specialist": {
+    "source": "Louise",
+    "walkSpeed": 1.0382128305972165,
+    "jointCount": 65
+  },
+  "operations-specialist": {
+    "source": "Joe",
+    "walkSpeed": 1.038765726918605,
+    "jointCount": 65
+  },
+  "receptionist": {
+    "source": "Suzie",
+    "walkSpeed": 1.0059204118571778,
+    "jointCount": 65
+  }
+}

@@ -1,0 +1,145 @@
+{
+  "version": 1,
+  "authority": "corporate-identity-record",
+  "fields": {
+    "companyName": {
+      "value": "Ashari Zakar Real Estate, LLC",
+      "status": "verified",
+      "sources": [
+        {
+          "kind": "local",
+          "path": "policies/corporate-identity-record.md",
+          "quote": "Company: Ashari Zakar Real Estate, LLC"
+        }
+      ],
+      "approval": {
+        "approvedBy": "Ashari Zakar, CEO",
+        "approvedOn": "2026-10-14",
+        "basis": "Direct CEO confirmations and approved project specification; corroborated by authorized company biography."
+      }
+    },
+    "abbreviation": {
+      "value": "AZRE",
+      "status": "verified",
+      "sources": [
+        {
+          "kind": "local",
+          "path": "policies/corporate-identity-record.md",
+          "quote": "Abbreviation: AZRE"
+        }
+      ],
+      "approval": {
+        "approvedBy": "Ashari Zakar, CEO",
+        "approvedOn": "2026-10-14",
+        "basis": "Direct CEO confirmations and approved project specification; corroborated by authorized company biography."
+      }
+    },
+    "founder": {
+      "value": "Ashari Zakar",
+      "status": "verified",
+      "sources": [
+        {
+          "kind": "local",
+          "path": "policies/corporate-identity-record.md",
+          "quote": "\u201cI am the Founder of Ashari Zakar Real Estate, LLC\u201d"
+        }
+      ],
+      "approval": {
+        "approvedBy": "Ashari Zakar, CEO",
+        "approvedOn": "2026-10-14",
+        "basis": "Direct CEO confirmations and approved project specification; corroborated by authorized company biography."
+      }
+    },
+    "ceo": {
+      "value": "Ashari Zakar",
+      "status": "verified",
+      "sources": [
+        {
+          "kind": "local",
+          "path": "policies/corporate-identity-record.md",
+          "quote": "\u201cI am the CEO. I am not the Acquisitions Manager.\u201d"
+        }
+      ],
+      "approval": {
+        "approvedBy": "Ashari Zakar, CEO",
+        "approvedOn": "2026-10-14",
+        "basis": "Direct CEO confirmations and approved project specification; corroborated by authorized company biography."
+      }
+    },
+    "headquarters": {
+      "value": "Atlanta, Georgia",
+      "status": "requires-verification",
+      "sources": [
+        {
+          "kind": "local",
+          "path": "policies/corporate-identity-record.md",
+          "quote": "an Atlanta-based business description alone is not an explicit headquarters record."
+        }
+      ],
+      "approval": null
+    },
+    "business": {
+      "value": "Real estate investment firm specializing in strategic acquisitions and dispositions.",
+      "status": "verified",
+      "sources": [
+        {
+          "kind": "local",
+          "path": "policies/corporate-identity-record.md",
+          "quote": "Business: Real estate investment firm specializing in strategic acquisitions and dispositions."
+        }
+      ],
+      "approval": {
+        "approvedBy": "Ashari Zakar, CEO",
+        "approvedOn": "2026-10-14",
+        "basis": "Direct CEO confirmations and approved project specification; corroborated by authorized company biography."
+      }
+    },
+    "ceoOperationalResponsibility": {
+      "value": "The CEO is not the Acquisitions Manager.",
+      "status": "verified",
+      "sources": [
+        {
+          "kind": "local",
+          "path": "policies/corporate-identity-record.md",
+          "quote": "The CEO is not the Acquisitions Manager."
+        }
+      ],
+      "approval": {
+        "approvedBy": "Ashari Zakar, CEO",
+        "approvedOn": "2026-10-14",
+        "basis": "Direct CEO confirmations and approved project specification; corroborated by authorized company biography."
+      }
+    },
+    "operationsReporting": {
+      "value": "Reports directly to the CEO.",
+      "status": "verified",
+      "sources": [
+        {
+          "kind": "local",
+          "path": "policies/corporate-identity-record.md",
+          "quote": "Operations Manager reporting relationship: Reports directly to the CEO."
+        }
+      ],
+      "approval": {
+        "approvedBy": "Ashari Zakar, CEO",
+        "approvedOn": "2026-10-14",
+        "basis": "Direct CEO confirmations and approved project specification; corroborated by authorized company biography."
+      }
+    },
+    "owner": {
+      "value": null,
+      "status": "requires-verification",
+      "sources": [],
+      "approval": null
+    }
+  },
+  "corroboratingSources": [
+    {
+      "kind": "vault",
+      "path": "Overview/Ashari Zakar Real Estate, LLC - Bio.md",
+      "quote": "Ashari Zakar is the CEO.",
+      "supports": "ceo",
+      "authority": "corporate-identity-record"
+    }
+  ]
+}

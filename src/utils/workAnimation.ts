@@ -9,23 +9,25 @@ export function workAnimationPhase(time:number){
  return {mouse,mouseBlend,restBlend,resting:phase>=64};
 }
 
-export function createWorkSchedule(seed:number,offset=0){
+export function createWorkSchedule(seed:number,offset=0,department='acquisitions'){
  let state=seed>>>0;
  const random=()=>{state=(Math.imul(state,1664525)+1013904223)>>>0;return state/4294967296;};
  const tempo=.9+random()*.2;
- type Cycle={start:number;workEnd:number;end:number;mouseWindows:{start:number;end:number}[]};
- const cycles:Cycle[]=[];
- function nextCycle(){let cursor=cycles.at(-1)?.end||0;const start=cursor,mouseWindows=[];
-  for(let i=0;i<4;i++){cursor+=8+random()*7;const end=cursor+2.5+random()*2;mouseWindows.push({start:cursor,end});cursor=end+1+random()*2;}
-  const cycle={start,workEnd:cursor,end:cursor+20,mouseWindows};cycles.push(cycle);return cycle;
+ type Segment={start:number;end:number;activity:string};
+ const segments:Segment[]=[];
+ function next(){const previous=segments.at(-1),start=previous?.end||0;
+  const choice=random();let activity=previous?.activity==='typing'?'review':choice<.38?'typing':choice<.58?'mouse':department==='receptionist'&&choice>.8?'entrance':department==='dispositions'&&choice>.76?'communication':'review';
+  if(department==='operations'&&choice>.55)activity='review';
+  const duration=activity==='typing'?3+random()*5:activity==='mouse'?2+random()*3:6+random()*10;
+  segments.push({start,end:start+duration,activity});
  }
- nextCycle();
+ next();
  return (time:number)=>{
-  const elapsed=Math.max(0,time+offset);while(cycles.at(-1)!.end<=elapsed)nextCycle();
-  const cycle=cycles.find(c=>c.end>elapsed)!;
-  const window=cycle.mouseWindows.find(w=>elapsed>w.start&&elapsed<w.end);
-  const mouseBlend=window?Math.min(1,(elapsed-window.start)/.5,(window.end-elapsed)/.5):0;
-  const linearRest=elapsed>=cycle.workEnd?Math.min(1,elapsed-cycle.workEnd):Math.max(0,1-(elapsed-cycle.start));
-  return {mouse:!!window,mouseBlend,restBlend:linearRest*linearRest*(3-2*linearRest),resting:elapsed>=cycle.workEnd,motionTime:elapsed*tempo};
+  const elapsed=Math.max(0,time+offset);while(segments.at(-1)!.end<=elapsed)next();
+  while(segments.length>2&&segments[1].end<=elapsed)segments.shift();
+  const segment=segments.find(s=>s.end>elapsed)!;
+  const edge=Math.max(0,Math.min(1,(elapsed-segment.start)/1.2,(segment.end-elapsed)/1.2)),blend=edge*edge*(3-2*edge);
+  const mouse=segment.activity==='mouse',typing=segment.activity==='typing',resting=!mouse&&!typing;
+  return {activity:segment.activity,typingBlend:typing?blend:0,mouse,mouseBlend:mouse?blend:0,restBlend:resting?blend:0,resting,motionTime:elapsed*tempo};
  };
 }

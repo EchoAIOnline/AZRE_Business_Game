@@ -1,0 +1,7 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import {webHandler} from '../src/chat-http.js';
+const handler=webHandler({chat:{store:{session:()=>null}},password:'test-only-password'});
+async function request(url,headers={}){const result={headers:{}};const req={url,method:'GET',headers:{host:'office.test',...headers}};const res={setHeader:(k,v)=>result.headers[k]=v,writeHead:s=>result.status=s,end:b=>result.body=String(b)};await handler(req,res,(s,b)=>{result.status=s;result.body=b;});return result;}
+test('embedded pages permit only same-origin ancestors and use the existing proxy namespace',async()=>{for(const path of ['/?embedded=chat','/operations?embedded=tasks']){const r=await request(path);assert.equal(r.status,200);assert.match(r.headers['Content-Security-Policy'],/frame-ancestors 'self'/);assert.match(r.body,/data-embedded="true"/);assert.match(r.body,/src="\/workforce\//);assert.doesNotMatch(r.headers['Content-Security-Policy'],/unsafe-inline|\*/);}const standalone=await request('/');assert.match(standalone.headers['Content-Security-Policy'],/frame-ancestors 'none'/);assert.match(standalone.body,/src="\/app.js"/);});
+test('connection probe reveals no records and embedding does not bypass login',async()=>{const probe=await request('/health');assert.deepEqual(probe.body,{service:'azre-workforce',available:true});for(const path of ['/chat/conversations','/auth/session'])assert.equal((await request(path)).status,401);});

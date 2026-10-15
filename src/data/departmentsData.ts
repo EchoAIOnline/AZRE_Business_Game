@@ -1,11 +1,12 @@
+import {operationsEmployee,acquisitionsEmployee,corporateConfig} from '../utils/workforceDirectory';
 import { DepartmentInfo, RealEstateDeal } from '../types/office';
 
 export const DEPARTMENTS: DepartmentInfo[] = [
   {
     id: 'acquisitions',
     name: 'Acquisitions Department',
-    specialistTitle: 'Acquisitions Specialist',
-    specialistName: 'Marcus Vance',
+    specialistTitle: acquisitionsEmployee.position,
+    specialistName: acquisitionsEmployee.name,
     shortDesc: 'Systematic MLS intake, ARV underwriting comps, and SureCash Offer generation across Metro Atlanta.',
     focusArea: 'Brookhaven · Buckhead · Sandy Springs · Dunwoody',
     dealDeskModule: 'DealDesk Sourcing & Underwriting Engine',
@@ -13,7 +14,7 @@ export const DEPARTMENTS: DepartmentInfo[] = [
     position: [-10, 0, -4],
     primaryMetrics: [
       { label: 'Active Pipeline', value: '14 Opportunities', change: '+3 this week' },
-      { label: 'SureCash Offers Out', value: '4 Offers', change: 'Weissman PC standard' },
+      { label: 'SureCash Offers Out', value: '4 Offers', change: 'Lueder, Larkin & Hunter — Douglasville standard' },
       { label: 'Target Land/ARV Ratio', value: '22.8%', change: 'Target 20% - 25%' },
       { label: 'Avg Acquisition Price', value: '$465,000', change: 'Negotiated discounts' },
     ],
@@ -50,22 +51,22 @@ export const DEPARTMENTS: DepartmentInfo[] = [
   {
     id: 'operations',
     name: 'Operations Department',
-    specialistTitle: 'Operations Specialist',
-    specialistName: 'David Sterling',
-    shortDesc: 'Managing transaction coordination, due diligence deadlines, escrow funds, and Weissman PC double closings.',
+    specialistTitle: operationsEmployee.position,
+    specialistName: operationsEmployee.name,
+    shortDesc: 'Managing transaction coordination, due diligence deadlines, escrow funds, and Lueder, Larkin & Hunter — Douglasville double closings.',
     focusArea: 'Title & Escrow · Due Diligence · Transactional Funding',
     dealDeskModule: 'DealDesk Closing Coordinator & Escrow Tracker',
     accentColor: '#38bdf8', // Clean blue/cyan
     position: [-7.5, 0, 7.5],
     primaryMetrics: [
-      { label: 'Closing Attorney', value: 'Weissman PC', change: 'Preferred Counsel' },
+      { label: 'Closing Attorney', value: 'Lueder, Larkin & Hunter — Douglasville', change: 'Preferred Counsel' },
       { label: 'Active Due Diligence', value: '2 Properties', change: '7-day inspection clock' },
       { label: 'EMD in Escrow', value: '$18,400', change: '1% purchase price' },
       { label: 'Transactional Capital', value: '$1,000,000', change: 'Pre-approved facility' },
     ],
     currentTasks: [
       'Monitoring 7-day Due Diligence expiration for 1420 Ashford Rd (3 days remaining)',
-      'Confirming receipt of 1% Earnest Money Deposit at Weissman PC trust account',
+      'Confirming receipt of 1% Earnest Money Deposit at Lueder, Larkin & Hunter — Douglasville trust account',
       'Scheduling simultaneous A-to-B and B-to-C settlement statements for Brookhaven deal',
       'Arranging short-term transactional funding repayment on same-day double closing',
     ],
@@ -89,7 +90,7 @@ export const DEPARTMENTS: DepartmentInfo[] = [
     currentTasks: [
       'Reviewing underwriting package for 1420 Ashford Dunwoody ($450k SureCash offer approved)',
       'Authorizing short-term transactional funding draw with private capital partner (12%)',
-      'Auditing double-closing settlement statements from Weissman PC',
+      'Auditing double-closing settlement statements from Lueder, Larkin & Hunter — Douglasville',
       'Expanding luxury builder relationships across Buckhead and Sandy Springs',
     ],
   },
@@ -113,7 +114,7 @@ export const DEPARTMENTS: DepartmentInfo[] = [
       'Evaluating Brookhaven contractor walkthrough notes: Topo flat, zero tree mitigation issues',
       'Cross-examining recent Buckhead comp sales on Powers Ferry Rd ($2.45M avg new build)',
       'Validating builder buy-box match scores before contract execution',
-      'Formulating double-closing timeline with Weissman PC escrow officers',
+      'Formulating double-closing timeline with Lueder, Larkin & Hunter — Douglasville escrow officers',
     ],
   },
 ];
